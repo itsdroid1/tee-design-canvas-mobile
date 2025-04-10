@@ -1,24 +1,18 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { Heart } from "lucide-react";
 import { useCursor } from "@/context/CursorContext";
-import { toast } from "sonner";
+import { useShop } from "@/context/ShopContext";
 
 const ProductCard = ({ id, name, price, image }) => {
   const { setCursorVariant } = useCursor();
-  const [isWishlisted, setIsWishlisted] = useState(false);
+  const { toggleWishlist, isInWishlist } = useShop();
   
-  const toggleWishlist = (e) => {
+  const handleWishlistClick = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    setIsWishlisted(!isWishlisted);
-    
-    if (!isWishlisted) {
-      toast.success(`${name} added to your wishlist!`);
-    } else {
-      toast.info(`${name} removed from your wishlist`);
-    }
+    toggleWishlist(id);
   };
   
   return (
@@ -46,18 +40,18 @@ const ProductCard = ({ id, name, price, image }) => {
       {/* Wishlist button */}
       <button 
         className={`absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-          isWishlisted 
+          isInWishlist(id) 
             ? 'bg-white text-red-500' 
             : 'bg-white/80 text-gray-600 hover:bg-white hover:text-gray-900'
         }`}
-        onClick={toggleWishlist}
+        onClick={handleWishlistClick}
         onMouseEnter={() => setCursorVariant("hover")}
         onMouseLeave={() => setCursorVariant("default")}
-        aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+        aria-label={isInWishlist(id) ? "Remove from wishlist" : "Add to wishlist"}
       >
         <Heart 
           size={16} 
-          className={isWishlisted ? "fill-red-500" : ""} 
+          className={isInWishlist(id) ? "fill-red-500" : ""} 
         />
       </button>
     </div>

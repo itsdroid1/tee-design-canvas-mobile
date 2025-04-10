@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Menu, X, ShoppingCart, User, Heart, Package, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCursor } from "@/context/CursorContext";
+import { useShop } from "@/context/ShopContext";
 import { 
   NavigationMenu,
   NavigationMenuContent,
@@ -18,7 +19,9 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const { setCursorVariant } = useCursor();
+  const { cart, wishlist } = useShop();
   const profileRef = useRef(null);
+  const location = useLocation();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -51,6 +54,11 @@ const Navbar = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  // Close mobile menu when changing routes
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location]);
 
   return (
     <header
@@ -119,11 +127,16 @@ const Navbar = () => {
         <div className="flex items-center space-x-4">
           <Link 
             to="/wishlist"
-            className="hidden md:flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors"
+            className="hidden md:flex relative items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 transition-colors"
             onMouseEnter={() => setCursorVariant("hover")}
             onMouseLeave={() => setCursorVariant("default")}
           >
             <Heart size={20} />
+            {wishlist.length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {wishlist.length}
+              </span>
+            )}
           </Link>
           
           <div className="relative" ref={profileRef}>
@@ -161,6 +174,11 @@ const Navbar = () => {
                   >
                     <Heart size={16} className="mr-3 text-gray-500" />
                     <span>Wishlist</span>
+                    {wishlist.length > 0 && (
+                      <span className="ml-auto bg-gray-100 text-xs rounded-full px-2 py-1">
+                        {wishlist.length}
+                      </span>
+                    )}
                   </Link>
                   <Link 
                     to="/cart" 
@@ -169,6 +187,11 @@ const Navbar = () => {
                   >
                     <ShoppingCart size={16} className="mr-3 text-gray-500" />
                     <span>Shopping Cart</span>
+                    {cart.length > 0 && (
+                      <span className="ml-auto bg-gray-100 text-xs rounded-full px-2 py-1">
+                        {cart.length}
+                      </span>
+                    )}
                   </Link>
                 </div>
                 
@@ -185,17 +208,21 @@ const Navbar = () => {
             )}
           </div>
           
-          <Button 
-            variant="ghost" 
-            size="icon"
-            asChild
+          <Link 
+            to="/cart" 
+            className="relative"
             onMouseEnter={() => setCursorVariant("hover")}
             onMouseLeave={() => setCursorVariant("default")}
           >
-            <Link to="/cart">
+            <Button variant="ghost" size="icon">
               <ShoppingCart size={20} />
-            </Link>
-          </Button>
+              {cart.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                  {cart.length}
+                </span>
+              )}
+            </Button>
+          </Link>
           
           <Button 
             className="md:hidden" 
@@ -214,20 +241,25 @@ const Navbar = () => {
       {isMenuOpen && (
         <div className="md:hidden bg-white absolute top-full left-0 right-0 border-t animate-fade-in">
           <div className="container mx-auto px-4 py-4 flex flex-col space-y-4">
-            <Link to="/" onClick={toggleMenu} className="text-base font-medium py-2">
+            <Link to="/" className="text-base font-medium py-2">
               Home
             </Link>
-            <Link to="/custom-design" onClick={toggleMenu} className="text-base font-medium py-2">
+            <Link to="/custom-design" className="text-base font-medium py-2">
               Design Your Own
             </Link>
-            <Link to="/shop" onClick={toggleMenu} className="text-base font-medium py-2">
+            <Link to="/shop" className="text-base font-medium py-2">
               Shop
             </Link>
-            <Link to="/about" onClick={toggleMenu} className="text-base font-medium py-2">
+            <Link to="/about" className="text-base font-medium py-2">
               About
             </Link>
-            <Link to="/wishlist" onClick={toggleMenu} className="text-base font-medium py-2 flex items-center">
+            <Link to="/wishlist" className="text-base font-medium py-2 flex items-center">
               <Heart size={18} className="mr-2" /> Wishlist
+              {wishlist.length > 0 && (
+                <span className="ml-auto bg-gray-100 text-xs rounded-full px-2 py-1">
+                  {wishlist.length}
+                </span>
+              )}
             </Link>
           </div>
         </div>

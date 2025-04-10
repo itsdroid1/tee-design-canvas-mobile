@@ -1,65 +1,15 @@
 
 import React, { useState } from "react";
 import { useCursor } from "@/context/CursorContext";
+import { useShop } from "@/context/ShopContext";
 import ProductCard from "@/components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Sliders, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
-// Mock product data - expanded list
-const products = [
-  {
-    id: "1",
-    name: "Classic Black Tee",
-    price: 24.99,
-    image: "https://images.unsplash.com/photo-1618517351616-38fb9c5210c6?q=80&w=987&auto=format&fit=crop",
-  },
-  {
-    id: "2",
-    name: "White Minimalist Tee",
-    price: 24.99,
-    image: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=987&auto=format&fit=crop",
-  },
-  {
-    id: "3",
-    name: "Vintage Gray Tee",
-    price: 29.99,
-    image: "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?q=80&w=987&auto=format&fit=crop",
-  },
-  {
-    id: "4",
-    name: "Navy Blue Essential",
-    price: 24.99,
-    image: "https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?q=80&w=987&auto=format&fit=crop",
-  },
-  {
-    id: "5",
-    name: "Limited Edition Graphic Tee",
-    price: 34.99,
-    image: "https://images.unsplash.com/photo-1562157873-818bc0726f68?q=80&w=927&auto=format&fit=crop",
-  },
-  {
-    id: "6",
-    name: "Striped Summer Tee",
-    price: 27.99,
-    image: "https://images.unsplash.com/photo-1529374814760-fe74e7dbfbb3?q=80&w=987&auto=format&fit=crop",
-  },
-  {
-    id: "7",
-    name: "Eco-Friendly Cotton Tee",
-    price: 32.99,
-    image: "https://images.unsplash.com/photo-1554568218-0f1715e72254?q=80&w=987&auto=format&fit=crop",
-  },
-  {
-    id: "8",
-    name: "Urban Street Style Tee",
-    price: 29.99,
-    image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=964&auto=format&fit=crop",
-  },
-];
-
 const Shop = () => {
   const { setCursorVariant } = useCursor();
+  const { products } = useShop();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
   

@@ -1,79 +1,42 @@
 
 import React, { useState } from "react";
 import { useCursor } from "@/context/CursorContext";
+import { useShop } from "@/context/ShopContext";
 import { Link } from "react-router-dom";
 import { Trash2, Heart, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner";
-
-// Mock cart items
-const initialCartItems = [
-  {
-    id: "1",
-    name: "Classic Black Tee",
-    price: 24.99,
-    image: "https://images.unsplash.com/photo-1618517351616-38fb9c5210c6?q=80&w=987&auto=format&fit=crop",
-    quantity: 1,
-    size: "M",
-    color: "Black",
-  },
-  {
-    id: "2",
-    name: "White Minimalist Tee",
-    price: 24.99,
-    image: "https://images.unsplash.com/photo-1581655353564-df123a1eb820?q=80&w=987&auto=format&fit=crop",
-    quantity: 2,
-    size: "L",
-    color: "White",
-  },
-];
 
 const Cart = () => {
   const { setCursorVariant } = useCursor();
-  const [cartItems, setCartItems] = useState(initialCartItems);
+  const { 
+    cart, 
+    removeFromCart, 
+    updateCartQuantity, 
+    moveToWishlist,
+    getCartTotals
+  } = useShop();
   
-  const removeFromCart = (id) => {
-    const itemToRemove = cartItems.find(item => item.id === id);
-    setCartItems(cartItems.filter(item => item.id !== id));
-    toast.info(`${itemToRemove.name} removed from your cart`);
-  };
-  
-  const updateQuantity = (id, newQuantity) => {
-    if (newQuantity < 1) return;
-    
-    setCartItems(cartItems.map(item => 
-      item.id === id ? { ...item, quantity: newQuantity } : item
-    ));
-  };
-  
-  const moveToWishlist = (id) => {
-    const itemToMove = cartItems.find(item => item.id === id);
-    setCartItems(cartItems.filter(item => item.id !== id));
-    toast.success(`${itemToMove.name} moved to your wishlist`);
-  };
+  const [promoCode, setPromoCode] = useState("");
   
   // Calculate totals
-  const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const shipping = subtotal > 0 ? 5.99 : 0;
-  const tax = subtotal * 0.08;
-  const total = subtotal + shipping + tax;
+  const { subtotal, shipping, tax, total } = getCartTotals();
   
   return (
     <div className="min-h-screen pt-24 pb-16">
       <div className="container mx-auto px-4 md:px-6">
         <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
         
-        {cartItems.length > 0 ? (
+        {cart.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Cart Items */}
             <div className="lg:col-span-2">
               <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                {cartItems.map((item, index) => (
+                {cart.map((item, index) => (
                   <div 
                     key={item.id} 
                     className={`p-4 md:p-6 flex flex-col sm:flex-row gap-4 ${
-                      index !== cartItems.length - 1 ? 'border-b' : ''
+                      index !== cart.length - 1 ? 'border-b' : ''
                     }`}
                   >
                     <div className="w-full sm:w-24 h-24 sm:h-full rounded-md overflow-hidden">
@@ -108,7 +71,7 @@ const Cart = () => {
                         <div className="flex items-center border rounded-md overflow-hidden">
                           <button 
                             className="px-3 py-1 bg-gray-100 hover:bg-gray-200"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                            onClick={() => updateCartQuantity(item.id, item.quantity - 1)}
                           >
                             -
                           </button>
@@ -118,14 +81,14 @@ const Cart = () => {
                             onChange={(e) => {
                               const value = parseInt(e.target.value);
                               if (!isNaN(value)) {
-                                updateQuantity(item.id, value);
+                                updateCartQuantity(item.id, value);
                               }
                             }}
                             className="w-12 text-center border-0 focus:ring-0"
                           />
                           <button 
                             className="px-3 py-1 bg-gray-100 hover:bg-gray-200"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                            onClick={() => updateCartQuantity(item.id, item.quantity + 1)}
                           >
                             +
                           </button>
@@ -200,7 +163,12 @@ const Cart = () => {
                 <div className="mt-6 pt-6 border-t">
                   <p className="font-medium mb-2">Promo Code</p>
                   <div className="flex gap-2">
-                    <Input placeholder="Enter code" className="flex-grow" />
+                    <Input 
+                      placeholder="Enter code" 
+                      className="flex-grow"
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value)}
+                    />
                     <Button 
                       variant="outline"
                       onMouseEnter={() => setCursorVariant("hover")}

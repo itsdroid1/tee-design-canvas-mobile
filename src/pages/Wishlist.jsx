@@ -1,39 +1,21 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { useCursor } from "@/context/CursorContext";
+import { useShop } from "@/context/ShopContext";
 import { Link } from "react-router-dom";
 import { ShoppingCart, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-
-// Mock wishlist items
-const initialWishlistItems = [
-  {
-    id: "1",
-    name: "Classic Black Tee",
-    price: 24.99,
-    image: "https://images.unsplash.com/photo-1618517351616-38fb9c5210c6?q=80&w=987&auto=format&fit=crop",
-  },
-  {
-    id: "3",
-    name: "Vintage Gray Tee",
-    price: 29.99,
-    image: "https://images.unsplash.com/photo-1503341455253-b2e723bb3dbb?q=80&w=987&auto=format&fit=crop",
-  },
-];
 
 const Wishlist = () => {
   const { setCursorVariant } = useCursor();
-  const [wishlistItems, setWishlistItems] = useState(initialWishlistItems);
+  const { wishlist, toggleWishlist, addToCart } = useShop();
   
   const removeFromWishlist = (id) => {
-    const itemToRemove = wishlistItems.find(item => item.id === id);
-    setWishlistItems(wishlistItems.filter(item => item.id !== id));
-    toast.info(`${itemToRemove.name} removed from your wishlist`);
+    toggleWishlist(id);
   };
   
-  const addToCart = (item) => {
-    toast.success(`${item.name} added to your cart!`);
+  const handleAddToCart = (item) => {
+    addToCart(item.id, 1, "M", item.colors?.[0]);
   };
   
   return (
@@ -41,10 +23,10 @@ const Wishlist = () => {
       <div className="container mx-auto px-4 md:px-6">
         <h1 className="text-3xl font-bold mb-8">My Wishlist</h1>
         
-        {wishlistItems.length > 0 ? (
+        {wishlist.length > 0 ? (
           <div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {wishlistItems.map((item) => (
+              {wishlist.map((item) => (
                 <div key={item.id} className="border rounded-lg overflow-hidden bg-white shadow-sm">
                   <div className="flex">
                     <div className="w-1/3">
@@ -83,7 +65,7 @@ const Wishlist = () => {
                         
                         <Button 
                           size="sm"
-                          onClick={() => addToCart(item)}
+                          onClick={() => handleAddToCart(item)}
                           onMouseEnter={() => setCursorVariant("hover")}
                           onMouseLeave={() => setCursorVariant("default")}
                         >
