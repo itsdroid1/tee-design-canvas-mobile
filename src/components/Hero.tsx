@@ -36,7 +36,7 @@ const Hero = () => {
                 onMouseLeave={() => setCursorVariant("default")}
                 asChild
               >
-                <Link to="/products">Shop Collection</Link>
+                <Link to="/shop">Shop Collection</Link>
               </Button>
             </div>
           </div>

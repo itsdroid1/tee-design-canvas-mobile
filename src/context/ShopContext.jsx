@@ -82,7 +82,14 @@ const initialProducts = [
 
 export const ShopProvider = ({ children }) => {
   // Load saved data from localStorage if available
-  const [products] = useState(initialProducts);
+  const [products, setProducts] = useState(() => {
+    const savedProducts = localStorage.getItem("products");
+    return savedProducts ? JSON.parse(savedProducts) : initialProducts;
+  });
+  const [customProducts, setCustomProducts] = useState(() => {
+    const savedCustomProducts = localStorage.getItem("customProducts");
+    return savedCustomProducts ? JSON.parse(savedCustomProducts) : [];
+  });
   const [cart, setCart] = useState(() => {
     const savedCart = localStorage.getItem("cart");
     return savedCart ? JSON.parse(savedCart) : [];
@@ -92,7 +99,15 @@ export const ShopProvider = ({ children }) => {
     return savedWishlist ? JSON.parse(savedWishlist) : [];
   });
 
-  // Save cart and wishlist to localStorage whenever they change
+  // Save data to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem("products", JSON.stringify(products));
+  }, [products]);
+
+  useEffect(() => {
+    localStorage.setItem("customProducts", JSON.stringify(customProducts));
+  }, [customProducts]);
+
   useEffect(() => {
     localStorage.setItem("cart", JSON.stringify(cart));
   }, [cart]);
@@ -102,7 +117,34 @@ export const ShopProvider = ({ children }) => {
   }, [wishlist]);
 
   // Add item to cart
-  const addToCart = (productId, quantity = 1, size = "M", color) => {
+  const addToCart = (productId, quantity = 1, size = "M", color, customProduct = null) => {
+    // Handle custom product
+    if (customProduct) {
+      // Check if this custom product already exists in our custom products array
+      if (!customProducts.some(p => p.id === productId)) {
+        setCustomProducts([...customProducts, customProduct]);
+      }
+      
+      // Add to cart
+      const existingItem = cart.find(item => item.id === productId);
+      
+      if (existingItem) {
+        setCart(cart.map(item => 
+          item.id === productId ? { ...item, quantity: item.quantity + quantity } : item
+        ));
+      } else {
+        setCart([...cart, { 
+          ...customProduct, 
+          quantity, 
+          size, 
+          color
+        }]);
+      }
+      
+      return;
+    }
+    
+    // Handle regular product
     const product = products.find(item => item.id === productId);
     
     if (!product) return;
@@ -150,7 +192,16 @@ export const ShopProvider = ({ children }) => {
 
   // Toggle wishlist item
   const toggleWishlist = (productId) => {
-    const product = products.find(item => item.id === productId);
+    // Check if it's a custom product
+    const isCustom = productId.toString().startsWith('custom-');
+    let product;
+    
+    if (isCustom) {
+      product = customProducts.find(item => item.id === productId);
+    } else {
+      product = products.find(item => item.id === productId);
+    }
+    
     if (!product) return;
     
     const existingItem = wishlist.find(item => item.id === productId);
@@ -178,8 +229,18 @@ export const ShopProvider = ({ children }) => {
       
       // Add to wishlist if not already there
       if (!isInWishlist(id)) {
-        const product = products.find(item => item.id === id);
-        setWishlist([...wishlist, product]);
+        const isCustom = id.toString().startsWith('custom-');
+        let product;
+        
+        if (isCustom) {
+          product = customProducts.find(item => item.id === id);
+        } else {
+          product = products.find(item => item.id === id);
+        }
+        
+        if (product) {
+          setWishlist([...wishlist, product]);
+        }
       }
       
       toast.success(`${itemToMove.name} moved to your wishlist`);
@@ -196,8 +257,14 @@ export const ShopProvider = ({ children }) => {
     return { subtotal, shipping, tax, total };
   };
 
+  // Get all available products (both regular and custom)
+  const getAllProducts = () => {
+    return [...products, ...customProducts];
+  };
+
   const value = {
     products,
+    customProducts,
     cart,
     wishlist,
     addToCart,
@@ -206,7 +273,8 @@ export const ShopProvider = ({ children }) => {
     toggleWishlist,
     isInWishlist,
     moveToWishlist,
-    getCartTotals
+    getCartTotals,
+    getAllProducts
   };
 
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;

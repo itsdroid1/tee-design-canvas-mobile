@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import TShirt3DModel from "@/components/TShirt3DModel";
 import { Palette, Upload, ShoppingCart, TextCursor, Check } from "lucide-react";
 import { useCursor } from "@/context/CursorContext";
+import { useShop } from "@/context/ShopContext";
 import { toast } from "sonner";
 
 const colors = [
@@ -23,6 +24,7 @@ const colors = [
 
 const CustomDesign = () => {
   const { setCursorVariant } = useCursor();
+  const { addToCart } = useShop();
   const [selectedColor, setSelectedColor] = useState("#000000");
   const [logoTexture, setLogoTexture] = useState<string | null>(null);
   const [textInput, setTextInput] = useState("");
@@ -56,7 +58,32 @@ const CustomDesign = () => {
   };
 
   const handleAddToCart = () => {
-    toast.success("Design added to cart!");
+    // Create a custom product object for the customized shirt
+    const customShirt = {
+      id: `custom-${Date.now()}`, // Generate a unique ID
+      name: `Custom T-Shirt (${getColorName(selectedColor)})`,
+      price: 24.99,
+      image: logoTexture || "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=1064&auto=format&fit=crop",
+      description: textInput ? `Custom design with text: "${textInput}"` : "Custom designed t-shirt",
+      customProduct: true,
+      customDetails: {
+        color: selectedColor,
+        text: textInput,
+        fontSize: fontSize[0],
+        logoTexture,
+      },
+    };
+
+    // Add the custom shirt to the cart
+    addToCart(customShirt.id, 1, "M", getColorName(selectedColor), customShirt);
+    
+    toast.success("Custom design added to cart!");
+  };
+
+  // Helper function to get color name from hex value
+  const getColorName = (hexValue: string): string => {
+    const color = colors.find(c => c.value === hexValue);
+    return color ? color.name : "Custom";
   };
 
   return (
